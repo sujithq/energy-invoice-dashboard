@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
 import { mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createCanvas, joinSession } from "@github/copilot-sdk/extension";
@@ -10,6 +11,10 @@ const artifactsDirectory = join(extensionDirectory, "artifacts");
 const invoicesDirectory = join(artifactsDirectory, "invoices");
 const statePath = join(artifactsDirectory, "ledger.json");
 const rendererPath = join(extensionDirectory, "renderer.html");
+const require = createRequire(import.meta.url);
+const { createDashboardSnapshot } = require(
+    join(extensionDirectory, "..", "..", "..", "docs", "dashboard-data.js"),
+);
 const maxUploadBytes = 30 * 1024 * 1024;
 const servers = new Map();
 let copilotSession;
@@ -186,6 +191,18 @@ async function handleRequest(request, response) {
         }
         if (request.method === "GET" && url.pathname === "/api/state") {
             sendJson(response, 200, await loadState());
+            return;
+        }
+        if (request.method === "GET" && url.pathname === "/api/export") {
+            const snapshot = createDashboardSnapshot(await loadState());
+            response.writeHead(200, {
+                "Content-Type": "application/json; charset=utf-8",
+                "Content-Disposition":
+                    'attachment; filename="energy-dashboard-data.json"',
+                "Cache-Control": "private, no-store",
+                "X-Content-Type-Options": "nosniff",
+            });
+            response.end(`${JSON.stringify(snapshot, null, 2)}\n`);
             return;
         }
         if (request.method === "POST" && url.pathname === "/api/invoices") {

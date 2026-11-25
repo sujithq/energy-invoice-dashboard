@@ -1,2 +1,11 @@
 /.github/extensions/energy-invoice-dashboard/artifacts/*
 !/.github/extensions/energy-invoice-dashboard/artifacts/.gitignore
+
+**/energy-dashboard-data.json
+**/dashboard-data.json
+**/exports/
+**/local-exports/
+**/private-exports/
+
+/docs/*.json
+/docs/**/*.json

@@ -105,6 +105,13 @@
       gap: 20px;
       margin-bottom: 18px;
     }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
     .eyebrow {
       color: var(--electricity);
       font-size: 12px;
@@ -173,6 +180,7 @@
     .primary:hover { background: #066a76; }
     .secondary { color: var(--text); background: var(--secondary-bg); }
     .danger { color: var(--danger-text); background: var(--danger-bg); }
+    .secondary:disabled { cursor: wait; opacity: .6; }
     .control-card {
       padding: 13px 16px;
       border: 1px solid var(--border);
@@ -537,7 +545,10 @@
         <h1>Factuur naar inzicht</h1>
         <p class="subtitle">Upload Frank Energie-facturen. De app koppelt automatisch voorschot, afrekening, verbruik en factuurperiode.</p>
       </div>
-      <div class="privacy" title="Bestanden blijven lokaal bij deze Copilot-extensie">● Lokaal & privaat</div>
+      <div class="header-actions">
+        <button class="secondary" id="exportData" type="button">Exporteer dashboarddata</button>
+        <div class="privacy" title="Bestanden blijven lokaal bij deze Copilot-extensie">● Lokaal & privaat</div>
+      </div>
     </header>
 
     <section class="toolbar">
@@ -796,6 +807,7 @@
       compareBody: document.querySelector("#compareBody"),
       invoiceCount: document.querySelector("#invoiceCount"),
       invoiceTableWrap: document.querySelector("#invoiceTableWrap"),
+      exportData: document.querySelector("#exportData"),
       toast: document.querySelector("#toast"),
     };
 
@@ -1938,7 +1950,33 @@
       }
     }
 
+    async function exportDashboardData() {
+      elements.exportData.disabled = true;
+      try {
+        const response = await fetch("/api/export", { cache: "no-store" });
+        if (!response.ok) {
+          const body = await response.json().catch(() => ({}));
+          throw new Error(body.error || `HTTP ${response.status}`);
+        }
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "energy-dashboard-data.json";
+        document.body.append(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+        showToast("Dashboarddata geëxporteerd. De JSON bevat geen factuurnummers of PDF-bestanden.");
+      } catch (error) {
+        showToast(`Kon dashboarddata niet exporteren: ${error.message}`, true);
+      } finally {
+        elements.exportData.disabled = false;
+      }
+    }
+
     elements.chooseFiles.addEventListener("click", () => elements.fileInput.click());
+    elements.exportData.addEventListener("click", exportDashboardData);
     elements.fileInput.addEventListener("change", () => uploadFiles(elements.fileInput.files));
     ["dragenter", "dragover"].forEach((eventName) => {
       elements.dropZone.addEventListener(eventName, (event) => {
