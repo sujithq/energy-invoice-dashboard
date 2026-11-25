@@ -73,3 +73,17 @@ To validate invoice parsing locally, upload PDFs through the canvas so the same
 entry point is exercised. Do not add real invoices, ledger exports, raw PDF text,
 customer identifiers, or exact personal totals as test fixtures. Any future
 public fixtures must be invented and sanitized.
+
+Before committing or pushing a change, confirm that private runtime data is
+still protected:
+
+```sh
+git check-ignore -v -- .github/extensions/energy-invoice-dashboard/artifacts/ledger.json
+git check-ignore -v -- .github/extensions/energy-invoice-dashboard/artifacts/invoices/example.pdf
+git status --short --ignored
+git diff --cached --name-only
+```
+
+The check-ignore commands must identify a matching `.gitignore` rule. The
+status output must show the local ledger and invoice directory as ignored
+(`!!`), and the staged file list must contain no PDFs or `ledger.json`.
