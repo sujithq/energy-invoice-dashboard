@@ -1,0 +1,2 @@
+/.github/extensions/energy-invoice-dashboard/artifacts/*
+!/.github/extensions/energy-invoice-dashboard/artifacts/.gitignore
