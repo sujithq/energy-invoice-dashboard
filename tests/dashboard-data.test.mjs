@@ -210,6 +210,39 @@ test("static viewer has local-only controls and no invoice network behavior", as
     }
 });
 
+test("year comparison control keeps a stable reset action and separate target", async () => {
+    const dashboards = await Promise.all([
+        readFile(
+            join(
+                repositoryRoot,
+                ".github",
+                "extensions",
+                "energy-invoice-dashboard",
+                "renderer.html",
+            ),
+            "utf8",
+        ),
+        readFile(join(repositoryRoot, "docs", "index.html"), "utf8"),
+    ]);
+
+    for (const source of dashboards) {
+        assert.match(
+            source,
+            /id="compareYoy"[^>]*aria-describedby="compareYoyTarget"[^>]*>Terug naar nieuwste jaarvergelijking<\/button>/,
+        );
+        assert.match(source, /<small id="compareYoyTarget" aria-live="polite">/);
+        assert.doesNotMatch(source, /elements\.compareYoy\.textContent/);
+        assert.match(
+            source,
+            /elements\.compareYoyTarget\.textContent = yearOverYear[\s\S]*?monthLabel\(yearOverYear\.older\)[\s\S]*?monthLabel\(yearOverYear\.newer\)/,
+        );
+        assert.match(
+            source,
+            /elements\.compareYoy\.addEventListener\("click"[\s\S]*?elements\.compareA\.value = pair\.older;[\s\S]*?elements\.compareB\.value = pair\.newer;[\s\S]*?renderCompare\(\);/,
+        );
+    }
+});
+
 function escapeRegExp(value) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

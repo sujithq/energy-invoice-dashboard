@@ -319,6 +319,7 @@
     }
     .compare-preset {
       display: flex;
+      flex-wrap: wrap;
       grid-column: 1 / -1;
       align-items: center;
       justify-content: space-between;
@@ -327,7 +328,9 @@
       padding-top: 14px;
       border-top: 1px solid var(--border);
     }
+    .compare-preset-copy { display: grid; gap: 2px; }
     .compare-preset span { color: var(--muted); font-size: 12px; }
+    .compare-preset small { color: var(--text); font-size: 11px; font-weight: 700; }
     .compare-preset button:disabled { cursor: not-allowed; opacity: .5; }
     .compare-head label { color: var(--muted); font-size: 12px; font-weight: 700; }
     .versus { padding-bottom: 9px; color: var(--muted); font-weight: 800; }
@@ -756,8 +759,11 @@
             <select id="compareB"></select>
           </label>
           <div class="compare-preset">
-            <span>Vergelijk dezelfde kalendermaand in verschillende jaren</span>
-            <button class="secondary" id="compareYoy" type="button">Zelfde maand vorig jaar</button>
+            <div class="compare-preset-copy">
+              <span>Vergelijk dezelfde kalendermaand in verschillende jaren</span>
+              <small id="compareYoyTarget" aria-live="polite">Geen jaarvergelijking beschikbaar</small>
+            </div>
+            <button class="secondary" id="compareYoy" type="button" aria-describedby="compareYoyTarget">Terug naar nieuwste jaarvergelijking</button>
           </div>
         </div>
         <div id="compareBody" class="compare-grid"></div>
@@ -804,6 +810,7 @@
       compareA: document.querySelector("#compareA"),
       compareB: document.querySelector("#compareB"),
       compareYoy: document.querySelector("#compareYoy"),
+      compareYoyTarget: document.querySelector("#compareYoyTarget"),
       compareBody: document.querySelector("#compareBody"),
       invoiceCount: document.querySelector("#invoiceCount"),
       invoiceTableWrap: document.querySelector("#invoiceTableWrap"),
@@ -1819,7 +1826,7 @@
       elements.compareA.value = keys.includes(previousA) ? previousA : (yearOverYear?.older ?? keys.at(-2) ?? keys[0] ?? "");
       elements.compareB.value = keys.includes(previousB) ? previousB : (yearOverYear?.newer ?? keys.at(-1) ?? keys[0] ?? "");
       elements.compareYoy.disabled = !yearOverYear;
-      elements.compareYoy.textContent = yearOverYear
+      elements.compareYoyTarget.textContent = yearOverYear
         ? `${monthLabel(yearOverYear.older)} vs ${monthLabel(yearOverYear.newer)}`
         : "Geen jaarvergelijking beschikbaar";
     }
